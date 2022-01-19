@@ -7,12 +7,15 @@ ENV ANSIBLE_TOWER_VER 3.8.5-1
 ENV PG_DATA /var/lib/postgresql/9.6/main
 ENV AWX_PROJECTS /var/lib/awx/projects
 ENV LC_ALL "en_US.UTF-8"
-ENV LANGUAGE "en_EN:en"
+ENV LANGUAGE "en_US.UTF-8"
 ENV LANG "en_US.UTF-8"
 ENV DEBIAN_FRONTEND "noninteractive"
-ADD http://releases.ansible.com/ansible-tower/setup/ansible-tower-setup-${ANSIBLE_TOWER_VER}.tar.gz ansible-tower-setup-${ANSIBLE_TOWER_VER}.tar.gz
+#ADD http://releases.ansible.com/ansible-tower/setup/ansible-tower-setup-${ANSIBLE_TOWER_VER}.tar.gz ansible-tower-setup-${ANSIBLE_TOWER_VER}.tar.gz
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY inventory inventory
+COPY ./pkg/ansible-tower-setup-3.8.5-1.tar.gz ansible-tower-setup-3.8.5-1.tar.gz
+#COPY ./licensing/licensing.py licensing.py
+
 
 RUN apt-get -qq update \
 	&& apt-get -yqq upgrade \
@@ -22,27 +25,36 @@ RUN apt-get -qq update \
 			gnupg \
 			libpython2.7 \
 			python \
-			python-pip \
+			python3-pip \
 			python-dev \
 			ca-certificates \
 			debconf \
 			apt-transport-https \
 			sudo \
+			curl \
 	&& locale-gen "en_US.UTF-8" \
 	&& echo "locales	locales/default_environment_locale	select	en_US.UTF-8" | debconf-set-selections \
 	&& dpkg-reconfigure locales \
 	&& mkdir -p /var/log/tower \
 	&& tar xvf ansible-tower-setup-${ANSIBLE_TOWER_VER}.tar.gz \
 	&& rm -f ansible-tower-setup-${ANSIBLE_TOWER_VER}.tar.gz \
-	&& mv inventory ansible-tower-setup-${ANSIBLE_TOWER_VER}/inventory \
-##	&& pip install ansible
-#
-#RUN cd /opt/ansible-tower-setup-${ANSIBLE_TOWER_VER} \
-#	&& ./setup.sh \
-#	&& chmod +x /docker-entrypoint.sh
-#
-## volumes and ports
-#VOLUME ["${PG_DATA}", "${AWX_PROJECTS}", "/certs",]
-#EXPOSE 443
-#
-#CMD ["/docker-entrypoint.sh", "ansible-tower"]
+	&& mv inventory ansible-tower-setup-${ANSIBLE_TOWER_VER}/inventory
+
+RUN sudo apt-get -yqq install build-essential
+RUN sudo apt-get -yqq install yum
+#RUN sudo apt-get -yqq install epel-release
+RUN sudo apt-get -yqq install ansible
+
+#RUN curl -fsSL -o- https://bootstrap.pypa.io/pip/3.5/get-pip.py | python3.5
+#RUN sudo pip3 install --upgrade pip
+#RUN pip install ansible
+
+RUN cd /opt/ansible-tower-setup-${ANSIBLE_TOWER_VER} \
+	&& ./setup.sh \
+	&& chmod +x /docker-entrypoint.sh
+
+# volumes and ports
+VOLUME ["${PG_DATA}", "${AWX_PROJECTS}", "/certs",]
+EXPOSE 443
+
+CMD ["/docker-entrypoint.sh", "ansible-tower"]

@@ -1,7 +1,15 @@
 
 
 ### 打包
-docker build --no-cache --squash -t ansible-tower:0.1 .
+docker build --no-cache --squash -t strong-tower:1.1 .
+docker run -d -P --name xstrong01 strong-tower:v0.1
+
+
+
+
+
+
+
 
 ### 构建
 docker run --privileged=true --name tower04 -d -it --rm ansible-tower:0.4 /usr/sbin/init
