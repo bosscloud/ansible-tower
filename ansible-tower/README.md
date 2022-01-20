@@ -9,6 +9,9 @@ docker build --no-cache --squash -t ansible-tower:2.1 .
 
 ```shell
 docker run -d -it -p 443:443 -p 80:80 --name tower18 --privileged=true ansible-tower:2.1 /usr/sbin/init
+
+docker run -d -it -p 443:443 -p 80:80  -v /var/lib/awx/projects:/var/lib/awx/projects --name tower15 --privileged=true ansible-tower:2.1 /usr/sbin/init
+
 docker exec -it tower18 /bin/bash
 ```
 
